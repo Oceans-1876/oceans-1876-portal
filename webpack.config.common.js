@@ -64,7 +64,7 @@ module.exports = {
             },
             {
                 type: 'javascript/auto',
-                test: /\.json$/,
+                test: /\.(geo)?json$/,
                 use: [
                     {
                         loader: 'file-loader',
