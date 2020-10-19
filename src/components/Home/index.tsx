@@ -1,85 +1,56 @@
 import React from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
-import { makeStyles } from '@material-ui/core/styles';
+import { Link } from 'react-router-dom';
+import Button from '@material-ui/core/Button';
+import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
+import BarChartIcon from '@material-ui/icons/BarChart';
+import SearchIcon from '@material-ui/icons/Search';
 
-import stationsGeoJSON from '../../files/stations.geojson';
+import mapImage from '../../images/map_sm.png';
 
-mapboxgl.accessToken = process.env.MAPBOX_TOKEN || '';
-
-const useStyle = makeStyles(() => ({
-    main: {
-        height: '100%',
-        margin: 0
-    },
-    mapContainer: {
-        width: '100%',
-        height: '100%'
-    }
-}));
-
-interface StationProperties {
-    id: number;
-    station: string;
-    location_name: string;
-    location_original_text: string;
-}
-
-const Home: React.FC = () => {
-    const classes = useStyle();
-
-    const mapContainer = React.useRef<HTMLDivElement>(null);
-    let map: mapboxgl.Map;
-
-    React.useEffect(() => {
-        if (mapContainer.current && mapboxgl.accessToken) {
-            map = new mapboxgl.Map({
-                container: mapContainer.current,
-                style: 'mapbox://styles/mapbox/streets-v11',
-                center: [0, 0],
-                zoom: 1
-            });
-            map.on('load', () => {
-                map.addSource('stations', {
-                    type: 'geojson',
-                    data: stationsGeoJSON
-                });
-                map.addLayer({
-                    id: 'stations',
-                    type: 'circle',
-                    source: 'stations',
-                    paint: {
-                        'circle-color': '#088'
-                    }
-                });
-                map.on('click', 'stations', (e) => {
-                    if (e.features && e.features[0]) {
-                        const { station, location_name, location_original_text } = e.features[0]
-                            .properties as StationProperties;
-                        const content = `<div>Station ${station}<br />${location_name}<br />${location_original_text}</div>`;
-                        new mapboxgl.Popup().setLngLat(e.lngLat).setHTML(content).addTo(map);
-                    }
-                });
-
-                // Change the cursor to a pointer when the mouse is over the states layer.
-                map.on('mouseenter', 'stations', () => {
-                    map.getCanvas().style.cursor = 'pointer';
-                });
-
-                // Change it back to a pointer when it leaves.
-                map.on('mouseleave', 'stations', () => {
-                    map.getCanvas().style.cursor = '';
-                });
-            });
-        }
-    }, []);
-
-    return (
-        <Grid className={classes.main} container item xs={12} justify="center" alignContent="space-around" spacing={5}>
-            <div className={classes.mapContainer} ref={mapContainer} />
+const Home = (): JSX.Element => (
+    <Container>
+        <Grid container direction="column">
+            <Grid container item justify="center">
+                <img src={mapImage} alt="World Map" />
+            </Grid>
+            <Grid container item>
+                <p>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam tincidunt risus quis vestibulum
+                    congue. Phasellus auctor a ipsum at sollicitudin. Vivamus cursus fringilla dolor ut pharetra. Aenean
+                    Aenean viverra rhoncus purus, id accumsan ipsum consectetur nec. In eget commodo eros, et accumsan
+                    accumsan tortor. Vestibulum sit amet dolor vehicula, luctus mauris ac, semper velit. Maecenas
+                    convallis et elit non congue. Vivamus vel ligula id nunc cursus tincidunt. Donec a efficitur ante,
+                    ante, vitae dictum sapien. Donec dignissim neque id eros rhoncus vulputate. Duis id risus et orci
+                    orci sagittis molestie. Morbi eget tincidunt purus.
+                </p>
+                <p>
+                    Etiam mattis nulla quis ex maximus accumsan. Vivamus pretium tempus dui, sed viverra quam
+                    ullamcorper in. Nullam pharetra ullamcorper lectus sed laoreet. Fusce tempor at lorem ac porttitor.
+                    porttitor. Morbi pellentesque venenatis quam, et tincidunt mi egestas at. Duis suscipit rhoncus leo
+                    leo suscipit efficitur. Nulla et mollis sapien.
+                </p>
+            </Grid>
+            <Grid container item justify="center" spacing={2}>
+                <Grid item>
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        startIcon={<SearchIcon />}
+                        component={Link}
+                        to="/explore"
+                    >
+                        Explore
+                    </Button>
+                </Grid>
+                <Grid item>
+                    <Button variant="contained" startIcon={<BarChartIcon />} disabled>
+                        Compare
+                    </Button>
+                </Grid>
+            </Grid>
         </Grid>
-    );
-};
+    </Container>
+);
 
 export default Home;

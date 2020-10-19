@@ -1,14 +1,16 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Grid from '@material-ui/core/Grid';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-
-import banner from '../../images/banner_small.png';
+import Button from '@material-ui/core/Button';
+import SearchIcon from '@material-ui/icons/Search';
+import BarChartIcon from '@material-ui/icons/BarChart';
 
 export const headerHeight = '75px';
-export const footerHeight = '60px';
+export const footerHeight = '30px';
 
 const useStyles = makeStyles((theme) => ({
     container: {
@@ -17,34 +19,29 @@ const useStyles = makeStyles((theme) => ({
     header: {
         'height': headerHeight,
         'minHeight': headerHeight,
-        'backgroundImage': `url(${banner})`,
-        'backgroundSize': 'cover',
-        'background-repeat': 'no-repeat round',
-        'color': theme.palette.secondary.contrastText,
-        'textDecoration': 'none',
         'border': '1px solid #555',
+        'color': theme.palette.primary.main,
+        'textDecoration': 'none',
+        'textTransform': 'uppercase',
         '& a': {
-            margin: 5
-        },
-        '& h5': {
-            fontSize: '1.75rem'
+            textDecoration: 'none',
+            color: theme.palette.primary.main
         }
     },
     headerToolbar: {
-        minHeight: headerHeight
+        'minHeight': headerHeight,
+        '& > :first-child': {
+            flexGrow: 1
+        },
+        '& > *': {
+            marginLeft: theme.spacing(2)
+        }
     },
     footer: {
         'height': footerHeight,
-        'background': '#f4f0ea',
+        'background': theme.palette.secondary.dark,
         '& h5': {
             fontSize: '1.75rem'
-        }
-    },
-    footerText: {
-        'maxWidth': 365,
-        'marginTop': 20,
-        '& span': {
-            lineHeight: '1rem'
         }
     },
     main: {
@@ -63,9 +60,23 @@ const Layout: React.FC<Props> = ({ children }: Props) => {
     return (
         <Grid className={classes.container} container component="main">
             <Grid item xs={12}>
-                <AppBar className={classes.header} position="relative" elevation={0}>
+                <AppBar className={classes.header} position="relative" elevation={1} color="transparent">
                     <Toolbar className={classes.headerToolbar}>
-                        <Typography variant="h4">Oceans 1876 Portal</Typography>
+                        <Typography variant="h4" component={Link} to="/">
+                            Oceans 1876 Portal
+                        </Typography>
+                        <Button
+                            variant="contained"
+                            color="secondary"
+                            startIcon={<SearchIcon />}
+                            component={Link}
+                            to="/explore"
+                        >
+                            Explore
+                        </Button>
+                        <Button variant="contained" startIcon={<BarChartIcon />} disabled>
+                            Compare
+                        </Button>
                     </Toolbar>
                 </AppBar>
             </Grid>
@@ -74,13 +85,7 @@ const Layout: React.FC<Props> = ({ children }: Props) => {
                 {children}
             </Grid>
 
-            <Grid className={classes.footer} item xs={12} component="footer">
-                <Grid container item xs={12} justify="center" spacing={2}>
-                    <Grid className={classes.footerText} item xs={4}>
-                        <Typography variant="caption">iLorem ipsum dolor sit amet</Typography>
-                    </Grid>
-                </Grid>
-            </Grid>
+            <Grid className={classes.footer} item xs={12} component="footer" />
         </Grid>
     );
 };

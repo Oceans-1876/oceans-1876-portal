@@ -16,7 +16,7 @@ const App = (): JSX.Element => {
     const classes = useStyle();
 
     return (
-        <Container className={classes.container} maxWidth="lg">
+        <Container className={classes.container} disableGutters maxWidth={false}>
             {Object.entries(routes).map(([path, props]) => (
                 <Route key={path} path={path} {...props} />
             ))}
