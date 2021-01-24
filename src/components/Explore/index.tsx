@@ -1,6 +1,5 @@
 import React from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import maplibre from 'maplibre-gl';
 import { makeStyles } from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
 import Grid from '@material-ui/core/Grid';
@@ -8,11 +7,11 @@ import IconButton from '@material-ui/core/IconButton';
 import InputBase from '@material-ui/core/InputBase';
 import SearchIcon from '@material-ui/icons/Search';
 
-import { createControl } from '../Map/Control';
+import { MapControl } from '../Map/Control';
 
 import stationsGeoJSON from '../../files/stations.geojson';
 
-mapboxgl.accessToken = process.env.MAPBOX_TOKEN || '';
+maplibre.accessToken = MAPBOX_TOKEN || '';
 
 const useStyle = makeStyles((theme) => ({
     main: {
@@ -35,23 +34,30 @@ const useStyle = makeStyles((theme) => ({
 }));
 
 interface StationProperties {
-    id: number;
+    station_id: number;
     station: string;
-    location_name: string;
-    location_original_text: string;
+    name: string;
+    species: string;
+    date: string;
+    air_temperature_noon: number;
+    air_temperature_daily_mean: number;
+    water_temperature_bottom: number;
+    water_temperature_surface: number;
+    water_density_bottom_60f: number;
+    water_density_surface_60f: number;
 }
 
 const Explore = (): JSX.Element => {
     const classes = useStyle();
 
     const mapContainer = React.useRef<HTMLDivElement>(null);
-    let map: mapboxgl.Map;
+    let map: maplibre.Map;
 
     const sidebar = React.useRef<HTMLDivElement>(null);
 
     React.useEffect(() => {
-        if (mapContainer.current && mapboxgl.accessToken) {
-            map = new mapboxgl.Map({
+        if (mapContainer.current && maplibre.accessToken) {
+            map = new maplibre.Map({
                 container: mapContainer.current,
                 style: 'mapbox://styles/mapbox/streets-v11',
                 center: [0, 0],
@@ -72,10 +78,31 @@ const Explore = (): JSX.Element => {
                 });
                 map.on('click', 'stations', (e) => {
                     if (e.features && e.features[0]) {
-                        const { station, location_name, location_original_text } = e.features[0]
-                            .properties as StationProperties;
-                        const content = `<div>Station ${station}<br />${location_name}<br />${location_original_text}</div>`;
-                        new mapboxgl.Popup().setLngLat(e.lngLat).setHTML(content).addTo(map);
+                        const {
+                            station,
+                            name,
+                            species,
+                            air_temperature_noon,
+                            air_temperature_daily_mean,
+                            water_temperature_bottom,
+                            water_temperature_surface,
+                            water_density_bottom_60f,
+                            water_density_surface_60f
+                        } = e.features[0].properties as StationProperties;
+                        const speciesList = JSON.parse(species).map((sp: string) => `<li>${sp}</li>`);
+                        const content = `
+                            <div>
+                                ${station} - ${name}<br />
+                                Air temperature (noon): ${air_temperature_noon}&deg;<br />
+                                Air temperature (daily mean): ${air_temperature_daily_mean}&deg;<br />
+                                Water temperature (bottom): ${water_temperature_bottom}&deg;<br />
+                                Water temperature (surface): ${water_temperature_surface}&deg;<br />
+                                Water density (bottom - 60F): ${water_density_bottom_60f}&deg;<br />
+                                Water density (surface - 60F): ${water_density_surface_60f}&deg;<br />
+                                Species: <ul>${speciesList.join('')}</ul>
+                            </div>
+                        `;
+                        new maplibre.Popup().setLngLat(e.lngLat).setHTML(content).addTo(map);
                     }
                 });
 
@@ -90,7 +117,7 @@ const Explore = (): JSX.Element => {
                 });
 
                 if (sidebar.current) {
-                    map.addControl(createControl(sidebar.current), 'top-left');
+                    map.addControl(new MapControl(sidebar.current), 'top-left');
                 }
             });
         }

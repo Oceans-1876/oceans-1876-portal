@@ -1,36 +1,43 @@
 const path = require('path');
-
 const Webpack = require('webpack');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
+// const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
     target: 'web',
 
+    context: __dirname,
+
     entry: {
-        styles: './src/styles/main.less',
-        polyfill: './src/polyfill.ts',
-        main: './src/index.tsx'
+        polyfill: './src/polyfill.js',
+        maplibre: 'maplibre-gl',
+        maplibreStyle: 'maplibre-gl/dist/mapbox-gl.css',
+        style: './src/styles/main.scss',
+        app: {
+            import: './src/app.tsx',
+            dependOn: 'maplibre'
+        }
     },
 
     output: {
-        path: path.resolve('./build'),
-        publicPath: '/',
-        filename: 'js/[name]-[hash].js',
+        path: path.resolve(__dirname, 'build'),
+        publicPath: process.env.PUBLIC_PATH || '/',
+        filename: 'js/[name]-[fullhash].js',
         crossOriginLoading: 'anonymous'
     },
 
     module: {
         rules: [
             {
+                // Use babel-loader for ts, tsx, js, and jsx files
                 test: /\.[tj]sx?$/,
                 exclude: /node_modules/,
                 use: [
                     'babel-loader',
                     {
+                        // Show eslint messages in the output
                         loader: 'eslint-loader',
                         options: {
                             emitWarning: true
@@ -39,7 +46,7 @@ module.exports = {
                 ]
             },
             {
-                test: /\.(less|css)$/,
+                test: /\.(s[ac]ss|css)$/,
                 use: [
                     {
                         loader: MiniCssExtractPlugin.loader,
@@ -48,19 +55,12 @@ module.exports = {
                         }
                     },
                     'css-loader',
-                    {
-                        loader: 'less-loader',
-                        options: {
-                            lessOptions: {
-                                paths: [
-                                    path.resolve('./src'),
-                                    path.resolve('./node_modules')
-                                ]
-                            },
-                            sourceMap: true
-                        }
-                    }
+                    'sass-loader'
                 ]
+            },
+            {
+                test: /\.svg$/,
+                loader: 'svg-inline-loader'
             },
             {
                 type: 'javascript/auto',
@@ -73,10 +73,6 @@ module.exports = {
                         }
                     }
                 ]
-            },
-            {
-                test: /\.svg$/,
-                loader: 'svg-inline-loader'
             },
             {
                 test: /\.(jpg|jpeg|png|eot|ttf|woff|woff2)$/,
@@ -93,7 +89,7 @@ module.exports = {
     },
 
     resolve: {
-        modules: ['node_modules', './src'],
+        modules: ['node_modules', 'src'],
         extensions: ['.ts', '.tsx', '.js', '.jsx']
     },
 
@@ -101,6 +97,7 @@ module.exports = {
         splitChunks: {
             chunks: 'all',
             cacheGroups: {
+                // Create a commons chunk, which includes all code shared between entry points.
                 commons: {
                     name: 'commons',
                     chunks: 'initial',
@@ -112,30 +109,31 @@ module.exports = {
 
     plugins: [
         new HtmlWebpackPlugin({
-            template: path.resolve('./src/index.html')
+            template: 'src/index.html'
         }),
         new Webpack.DefinePlugin({
-            'process.env.MAPBOX_TOKEN': JSON.stringify(process.env.MAPBOX_TOKEN)
+            PUBLIC_PATH: JSON.stringify(process.env.PUBLIC_PATH || '/'),   // The base path for the app
+            MAPBOX_TOKEN: JSON.stringify(process.env.MAPBOX_TOKEN)
         }),
-        new FaviconsWebpackPlugin({
-            logo: './src/images/favicon.png',
-            prefix: 'icons/',
-            emitStats: false,
-            inject: true,
-            favicons: {
-                icons: {
-                    android: false,
-                    appleIcon: false,
-                    appleStartup: false,
-                    coast: false,
-                    favicons: true,
-                    firefox: false,
-                    windows: false,
-                    yandex: false
-                }
-            }
-        }),
-        new MiniCssExtractPlugin({ filename: 'css/[name]-[hash].css' }),
+        // new FaviconsWebpackPlugin({
+        //     logo: './src/images/favicon.png',
+        //     prefix: 'icons/',
+        //     emitStats: false,
+        //     inject: true,
+        //     favicons: {
+        //         icons: {
+        //             android: false,
+        //             appleIcon: false,
+        //             appleStartup: false,
+        //             coast: false,
+        //             favicons: true,
+        //             firefox: false,
+        //             windows: false,
+        //             yandex: false
+        //         }
+        //     }
+        // }),
+        new MiniCssExtractPlugin({ filename: 'css/[name]-[fullhash].css' }),
         new CleanWebpackPlugin()
     ]
 };

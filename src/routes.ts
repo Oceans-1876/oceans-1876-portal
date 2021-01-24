@@ -1,16 +1,22 @@
+import { lazy } from 'react';
+
 import { withLayout } from './components/Layouts/utils';
 import MainLayout from './components/Layouts/MainLayout';
-import Explore from './components/Explore';
-import Home from './components/Home';
 
 const routes: { [key: string]: import('react-router-dom').RouteProps } = {
     '/': {
         exact: true,
-        component: withLayout(MainLayout, Home)
+        component: withLayout(
+            MainLayout,
+            lazy(() => import('./components/Home'))
+        )
     },
     '/explore': {
         exact: true,
-        component: withLayout(MainLayout, Explore)
+        component: withLayout(
+            MainLayout,
+            lazy(() => import('./components/Explore'))
+        )
     }
 };
 

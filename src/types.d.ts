@@ -1,9 +1,6 @@
-declare namespace NodeJS {
-    interface ProcessEnv {
-        readonly NODE_ENV: 'development' | 'production' | 'test';
-        readonly PUBLIC_URL: string;
-    }
-}
+declare const ENV: 'development' | 'production' | 'test';
+declare const PUBLIC_URL: string;
+declare const MAPBOX_TOKEN: string;
 
 declare module '*.geojson' {
     const src: string;
@@ -54,7 +51,7 @@ declare module '*.module.css' {
     export default classes;
 }
 
-declare module '*.module.less' {
+declare module '*.module.scss' {
     const classes: { readonly [key: string]: string };
     export default classes;
 }
