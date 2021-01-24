@@ -2,6 +2,11 @@ declare const ENV: 'development' | 'production' | 'test';
 declare const PUBLIC_URL: string;
 declare const MAPBOX_TOKEN: string;
 
+declare module '*.json' {
+    const value: string;
+    export default value;
+}
+
 declare module '*.geojson' {
     const src: string;
     export default src;

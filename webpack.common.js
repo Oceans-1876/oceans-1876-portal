@@ -1,7 +1,7 @@
 const path = require('path');
 const Webpack = require('webpack');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-// const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
+const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
@@ -115,24 +115,24 @@ module.exports = {
             PUBLIC_PATH: JSON.stringify(process.env.PUBLIC_PATH || '/'),   // The base path for the app
             MAPBOX_TOKEN: JSON.stringify(process.env.MAPBOX_TOKEN)
         }),
-        // new FaviconsWebpackPlugin({
-        //     logo: './src/images/favicon.png',
-        //     prefix: 'icons/',
-        //     emitStats: false,
-        //     inject: true,
-        //     favicons: {
-        //         icons: {
-        //             android: false,
-        //             appleIcon: false,
-        //             appleStartup: false,
-        //             coast: false,
-        //             favicons: true,
-        //             firefox: false,
-        //             windows: false,
-        //             yandex: false
-        //         }
-        //     }
-        // }),
+        new FaviconsWebpackPlugin({
+            logo: './src/images/favicon.png',
+            prefix: 'icons/',
+            emitStats: false,
+            inject: true,
+            favicons: {
+                icons: {
+                    android: false,
+                    appleIcon: false,
+                    appleStartup: false,
+                    coast: false,
+                    favicons: true,
+                    firefox: false,
+                    windows: false,
+                    yandex: false
+                }
+            }
+        }),
         new MiniCssExtractPlugin({ filename: 'css/[name]-[fullhash].css' }),
         new CleanWebpackPlugin()
     ]

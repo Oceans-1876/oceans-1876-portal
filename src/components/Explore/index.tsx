@@ -1,14 +1,18 @@
 import React from 'react';
+import axios from 'axios';
 import maplibre from 'maplibre-gl';
 import { makeStyles } from '@material-ui/core/styles';
-import Box from '@material-ui/core/Box';
+import Fab from '@material-ui/core/Fab';
 import Grid from '@material-ui/core/Grid';
-import IconButton from '@material-ui/core/IconButton';
-import InputBase from '@material-ui/core/InputBase';
-import SearchIcon from '@material-ui/icons/Search';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import TextField from '@material-ui/core/TextField';
+import Autocomplete from '@material-ui/lab/Autocomplete';
+import CloseIcon from '@material-ui/icons/Close';
 
 import { MapControl } from '../Map/Control';
 
+import speciesJSON from '../../files/species.json';
 import stationsGeoJSON from '../../files/stations.geojson';
 
 maplibre.accessToken = MAPBOX_TOKEN || '';
@@ -24,12 +28,18 @@ const useStyle = makeStyles((theme) => ({
     },
     sidebar: {
         background: '#fff',
-        width: 300,
+        width: 350,
         padding: theme.spacing(1)
     },
     searchInput: {
         marginLeft: theme.spacing(1),
         flex: 1
+    },
+    stationCloseButton: {
+        position: 'absolute',
+        top: 50,
+        right: 20,
+        zIndex: 10
     }
 }));
 
@@ -50,15 +60,20 @@ interface StationProperties {
 const Explore = (): JSX.Element => {
     const classes = useStyle();
 
-    const mapContainer = React.useRef<HTMLDivElement>(null);
-    let map: maplibre.Map;
+    const mapContainerRef = React.useRef<HTMLDivElement>(null);
+    const mapRef = React.useRef<maplibre.Map>();
 
-    const sidebar = React.useRef<HTMLDivElement>(null);
+    const sidebarRef = React.useRef<HTMLDivElement>(null);
+
+    const [allSpecies, updateAllSpecies] = React.useState<string[]>([]);
+    const [selectedSpecies, updateSelectedSpecies] = React.useState<string[]>([]);
+
+    const [selectedStation, updateSelectedStation] = React.useState<StationProperties>();
 
     React.useEffect(() => {
-        if (mapContainer.current && maplibre.accessToken) {
-            map = new maplibre.Map({
-                container: mapContainer.current,
+        if (mapContainerRef.current && maplibre.accessToken) {
+            const map = new maplibre.Map({
+                container: mapContainerRef.current,
                 style: 'mapbox://styles/mapbox/streets-v11',
                 center: [0, 0],
                 zoom: 1
@@ -76,33 +91,24 @@ const Explore = (): JSX.Element => {
                         'circle-color': '#088'
                     }
                 });
+
+                map.addLayer({
+                    id: 'selected-station',
+                    type: 'circle',
+                    source: 'stations',
+                    paint: {
+                        'circle-radius': 10,
+                        'circle-color': 'red',
+                        'circle-opacity': 0.5
+                    },
+                    filter: ['==', 'station_id', '']
+                });
+
                 map.on('click', 'stations', (e) => {
                     if (e.features && e.features[0]) {
-                        const {
-                            station,
-                            name,
-                            species,
-                            air_temperature_noon,
-                            air_temperature_daily_mean,
-                            water_temperature_bottom,
-                            water_temperature_surface,
-                            water_density_bottom_60f,
-                            water_density_surface_60f
-                        } = e.features[0].properties as StationProperties;
-                        const speciesList = JSON.parse(species).map((sp: string) => `<li>${sp}</li>`);
-                        const content = `
-                            <div>
-                                ${station} - ${name}<br />
-                                Air temperature (noon): ${air_temperature_noon}&deg;<br />
-                                Air temperature (daily mean): ${air_temperature_daily_mean}&deg;<br />
-                                Water temperature (bottom): ${water_temperature_bottom}&deg;<br />
-                                Water temperature (surface): ${water_temperature_surface}&deg;<br />
-                                Water density (bottom - 60F): ${water_density_bottom_60f}&deg;<br />
-                                Water density (surface - 60F): ${water_density_surface_60f}&deg;<br />
-                                Species: <ul>${speciesList.join('')}</ul>
-                            </div>
-                        `;
-                        new maplibre.Popup().setLngLat(e.lngLat).setHTML(content).addTo(map);
+                        const stationProperties = e.features[0].properties as StationProperties;
+                        updateSelectedStation(stationProperties);
+                        map.setFilter('selected-station', ['==', 'station_id', stationProperties.station_id]);
                     }
                 });
 
@@ -116,23 +122,96 @@ const Explore = (): JSX.Element => {
                     map.getCanvas().style.cursor = '';
                 });
 
-                if (sidebar.current) {
-                    map.addControl(new MapControl(sidebar.current), 'top-left');
+                if (sidebarRef.current) {
+                    map.addControl(new MapControl(sidebarRef.current), 'top-left');
                 }
             });
+            mapRef.current = map;
         }
     }, []);
 
+    React.useEffect(() => {
+        axios
+            .get(speciesJSON)
+            .then(({ data }) => {
+                updateAllSpecies(data);
+            })
+            .catch(console.error);
+    }, []);
+
+    React.useEffect(() => {
+        const map = mapRef.current;
+        if (map && map.loaded()) {
+            map.setFilter('stations', ['any', ...selectedSpecies.map((sp) => ['in', sp, ['get', 'species']])]);
+        }
+    }, [selectedSpecies]);
+
     return (
         <Grid className={classes.main} container item xs={12} justify="center" alignContent="space-around" spacing={5}>
-            <div className={classes.mapContainer} ref={mapContainer} />
-            <Grid className={`hidden ${classes.sidebar}`} ref={sidebar}>
-                <Grid item component={Box} display="flex">
-                    <InputBase className={classes.searchInput} placeholder="Search..." />
-                    <IconButton>
-                        <SearchIcon />
-                    </IconButton>
+            <div className={classes.mapContainer} ref={mapContainerRef} />
+            <Grid className={`hidden ${classes.sidebar}`} ref={sidebarRef}>
+                <Grid item>
+                    <Autocomplete
+                        multiple
+                        disableCloseOnSelect
+                        includeInputInList
+                        fullWidth
+                        limitTags={2}
+                        ChipProps={{
+                            size: 'small'
+                        }}
+                        options={allSpecies}
+                        value={selectedSpecies}
+                        renderInput={(params) => <TextField {...params} placeholder="Select species" />}
+                        onChange={(_e, selectedOptions) => {
+                            updateSelectedSpecies(selectedOptions);
+                        }}
+                    />
                 </Grid>
+                {selectedStation ? (
+                    <Grid item>
+                        <Fab
+                            className={classes.stationCloseButton}
+                            color="primary"
+                            size="small"
+                            onClick={() => {
+                                mapRef.current?.setFilter('selected-station', ['==', 'station_id', '']);
+                                updateSelectedStation(undefined);
+                            }}
+                        >
+                            <CloseIcon />
+                        </Fab>
+                        <List>
+                            <ListItem>
+                                {selectedStation.station} - {selectedStation.name}
+                            </ListItem>
+                            <ListItem>Air temperature (noon): {selectedStation.air_temperature_noon}&deg;</ListItem>
+                            <ListItem>
+                                Air temperature (daily mean): ${selectedStation.air_temperature_daily_mean}&deg;
+                            </ListItem>
+                            <ListItem>
+                                Water temperature (bottom): ${selectedStation.water_temperature_bottom}&deg;
+                            </ListItem>
+                            <ListItem>
+                                Water temperature (surface): ${selectedStation.water_temperature_surface}&deg;
+                            </ListItem>
+                            <ListItem>
+                                Water density (bottom - 60F): ${selectedStation.water_density_bottom_60f}&deg;
+                            </ListItem>
+                            <ListItem>
+                                Water density (surface - 60F): ${selectedStation.water_density_surface_60f}&deg;
+                            </ListItem>
+                            <ListItem>
+                                Species:&nbsp;
+                                <List>
+                                    {JSON.parse(selectedStation.species).map((sp: string) => (
+                                        <ListItem key={sp}>{sp}</ListItem>
+                                    ))}
+                                </List>
+                            </ListItem>
+                        </List>
+                    </Grid>
+                ) : null}
             </Grid>
         </Grid>
     );
