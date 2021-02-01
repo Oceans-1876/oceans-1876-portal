@@ -10,7 +10,6 @@ import SearchIcon from '@material-ui/icons/Search';
 import BarChartIcon from '@material-ui/icons/BarChart';
 
 export const headerHeight = '75px';
-export const footerHeight = '30px';
 
 const useStyles = makeStyles((theme) => ({
     container: {
@@ -37,16 +36,9 @@ const useStyles = makeStyles((theme) => ({
             marginLeft: theme.spacing(2)
         }
     },
-    footer: {
-        'height': footerHeight,
-        'background': theme.palette.secondary.dark,
-        '& h5': {
-            fontSize: '1.75rem'
-        }
-    },
     main: {
         position: 'relative',
-        height: `calc(100vh - ${headerHeight} - ${footerHeight})`
+        height: `calc(100vh - ${headerHeight})`
     }
 }));
 
@@ -62,7 +54,7 @@ const Layout: React.FC<Props> = ({ children }: Props) => {
             <Grid item xs={12}>
                 <AppBar className={classes.header} position="relative" elevation={1} color="transparent">
                     <Toolbar className={classes.headerToolbar}>
-                        <Typography variant="h4" component={Link} to="/">
+                        <Typography variant="h4" component={Link} to={PUBLIC_PATH}>
                             Oceans 1876 Portal
                         </Typography>
                         <Button
@@ -70,7 +62,7 @@ const Layout: React.FC<Props> = ({ children }: Props) => {
                             color="secondary"
                             startIcon={<SearchIcon />}
                             component={Link}
-                            to="/explore"
+                            to={`${PUBLIC_PATH}explore`}
                         >
                             Explore
                         </Button>
@@ -84,8 +76,6 @@ const Layout: React.FC<Props> = ({ children }: Props) => {
             <Grid className={classes.main} container item xs={12} alignItems="center">
                 {children}
             </Grid>
-
-            <Grid className={classes.footer} item xs={12} component="footer" />
         </Grid>
     );
 };

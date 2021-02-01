@@ -1,5 +1,5 @@
 declare const ENV: 'development' | 'production' | 'test';
-declare const PUBLIC_URL: string;
+declare const PUBLIC_PATH: string;
 declare const MAPBOX_TOKEN: string;
 
 declare module '*.json' {

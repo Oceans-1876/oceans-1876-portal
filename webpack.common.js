@@ -112,7 +112,7 @@ module.exports = {
             template: 'src/index.html'
         }),
         new Webpack.DefinePlugin({
-            PUBLIC_PATH: JSON.stringify(process.env.PUBLIC_PATH || '/'),   // The base path for the app
+            PUBLIC_PATH: JSON.stringify(process.env.PUBLIC_PATH || '/'),   // The base path for the app. It must end with a slash.
             MAPBOX_TOKEN: JSON.stringify(process.env.MAPBOX_TOKEN)
         }),
         new FaviconsWebpackPlugin({

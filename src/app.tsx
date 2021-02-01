@@ -12,7 +12,7 @@ const App = (): JSX.Element => (
     <Container className="fillContainer" disableGutters maxWidth={false}>
         <Suspense fallback={<Loading />}>
             {Object.entries(routes).map(([path, props]) => (
-                <Route key={path} path={path} {...props} />
+                <Route key={path} path={`${PUBLIC_PATH}${path}`} {...props} />
             ))}
         </Suspense>
     </Container>
