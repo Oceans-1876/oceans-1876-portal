@@ -187,19 +187,19 @@ const Explore = (): JSX.Element => {
                             </ListItem>
                             <ListItem>Air temperature (noon): {selectedStation.air_temperature_noon}&deg;</ListItem>
                             <ListItem>
-                                Air temperature (daily mean): ${selectedStation.air_temperature_daily_mean}&deg;
+                                Air temperature (daily mean): {selectedStation.air_temperature_daily_mean}&deg;
                             </ListItem>
                             <ListItem>
-                                Water temperature (bottom): ${selectedStation.water_temperature_bottom}&deg;
+                                Water temperature (bottom): {selectedStation.water_temperature_bottom}&deg;
                             </ListItem>
                             <ListItem>
-                                Water temperature (surface): ${selectedStation.water_temperature_surface}&deg;
+                                Water temperature (surface): {selectedStation.water_temperature_surface}&deg;
                             </ListItem>
                             <ListItem>
-                                Water density (bottom - 60F): ${selectedStation.water_density_bottom_60f}&deg;
+                                Water density (bottom - 60F): {selectedStation.water_density_bottom_60f}&deg;
                             </ListItem>
                             <ListItem>
-                                Water density (surface - 60F): ${selectedStation.water_density_surface_60f}&deg;
+                                Water density (surface - 60F): {selectedStation.water_density_surface_60f}&deg;
                             </ListItem>
                             <ListItem>
                                 Species:&nbsp;
